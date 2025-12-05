@@ -1,25 +1,30 @@
-name: Run tfsec sarif report
+name: "Upload SARIF"
+
+# Run workflow each time code is pushed to your repository and on a schedule.
+# The scheduled workflow runs every Thursday at 15:45 UTC.
 on:
   push:
-    branches:
-      - master
-  pull_request:
+  schedule:
+    - cron: '45 15 * * 4'
+
 jobs:
-  tfsec:
-    name: tfsec sarif report
+  build:
     runs-on: ubuntu-latest
-
+    permissions:
+      # required for all workflows
+      security-events: write
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
     steps:
-      - name: Clone repo
-        uses: actions/checkout@master
-
-      - name: run report
-        uses: aquasecurity/tfsec-sarif-action@v0.1.0
-        with:
-          sarif_file: tfsec.sarif          
-
+      # This step checks out a copy of your repository.
+      - name: Checkout repository
+        uses: actions/checkout@v5
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v4
         with:
           # Path to SARIF file relative to the root of the repository
-          sarif_file: tfsec.sarif
+          sarif_file: results.sarif
+          # Optional category for the results
+          # Used to differentiate multiple results for one commit
+          category: my-analysis-tool
